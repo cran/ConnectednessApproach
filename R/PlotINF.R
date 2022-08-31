@@ -9,17 +9,18 @@
 #' @return Return connectedness plot
 #' @export
 PlotINF = function(dca, ca=NULL, path=NULL, ylim=c(NULL, NULL), selection=NULL, ...) {
+  message("The influence connectedness index is implemented according to:\n Gabauer, D. (2021). Dynamic measures of asymmetric & pairwise connectedness within an optimal currency area: Evidence from the ERM I system. Journal of Multinational Financial Management, 60, 100680.")
   if (!is.null(path)) {
     if (!dir.exists(path)) {
       dir.create(path)
     }
   }
-  if (length(ca)>0 && !is.null(ca$approach)) {
+  if (length(ca)>0 && !is.null(ca$config$approach)) {
     ca = list(ca)
   }
   x = dca$INFLUENCE
   if (is.null(x)) {
-    stop(paste(dca$approach, "has no INFLUENCE values."))
+    stop(paste(dca$config$approach, "has no INFLUENCE values."))
   }
   date = as.Date(dimnames(x)[[3]])
   t = length(date)
@@ -44,32 +45,7 @@ PlotINF = function(dca, ca=NULL, path=NULL, ylim=c(NULL, NULL), selection=NULL, 
     k_col = ceiling(k/k_row)
     par(mfcol=c(k_row, k_col), oma=c(0,0,0,0) + 0.5, mar = c(1,1,1,1) + .5, mgp=c(1, 0.4, 0))
   }
-  if (dca$approach!="Frequency") {
-    if (is.null(lower)) {
-      lower = min(x)
-    }
-    if (is.null(upper)) {
-      upper = max(x)
-    }
-    for (j in 1:k) {
-      for (i in 1:k) {
-        if (i>j) {
-          if (i==selection || j==selection || is.null(selection)) {
-            plot(date, x[i,j,], type="l", main=paste(NAMES[j],"-",NAMES[i]), las=1, xlab="", ylab="", xaxs="i", yaxs="i", tck=-0.02, ylim=c(lower,upper), ...)
-            grid(NA, NULL, lty=2)
-            polygon(c(date,rev(date)),c(c(rep(0,t)),rev(x[i,j,])),col=1, border=1)
-            if (!is.null(ca)) {
-              for (il in 1:length(ca)) {
-                lines(as.Date(rownames(ca[[il]]$TCI)), ca[[il]]$INFLUENCE[i,j,], col=il+1)
-              }
-            }
-            abline(h=0, lty=3)
-            box()
-          }
-        }
-      }
-    }
-  } else {
+  if (length(dim(dca$NET))>2) {
     for (j in 1:k) {
       for (i in 1:k) {
         if (i>j) {
@@ -91,7 +67,32 @@ PlotINF = function(dca, ca=NULL, path=NULL, ylim=c(NULL, NULL), selection=NULL, 
               lines(date, x_[,l],col=l)
             }
             abline(h=0, lty=3)
-            legend("topleft", colnames(x_), fill=c(1:ncol(x_)), bty="n")
+            legend("topleft", colnames(x_), fill=1:ncol(x_), bty="n")
+            box()
+          }
+        }
+      }
+    }
+  } else {
+    if (is.null(lower)) {
+      lower = min(x)
+    }
+    if (is.null(upper)) {
+      upper = max(x)
+    }
+    for (j in 1:k) {
+      for (i in 1:k) {
+        if (i>j) {
+          if (i==selection || j==selection || is.null(selection)) {
+            plot(date, x[i,j,], type="l", main=paste(NAMES[j],"-",NAMES[i]), las=1, xlab="", ylab="", xaxs="i", yaxs="i", tck=-0.02, ylim=c(lower,upper), ...)
+            grid(NA, NULL, lty=2)
+            polygon(c(date,rev(date)),c(c(rep(0,t)),rev(x[i,j,])),col=1, border=1)
+            if (!is.null(ca)) {
+              for (il in 1:length(ca)) {
+                lines(as.Date(rownames(ca[[il]]$TCI)), ca[[il]]$INFLUENCE[i,j,], col=il+1)
+              }
+            }
+            abline(h=0, lty=3)
             box()
           }
         }

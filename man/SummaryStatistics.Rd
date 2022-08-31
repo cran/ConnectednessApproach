@@ -6,8 +6,8 @@
 \usage{
 SummaryStatistics(
   x,
-  portmanteau = "Ljung-Box",
-  correlation = "kendall",
+  portmanteau = c("Ljung-Box", "Box-Pierce", "Monti"),
+  correlation = c("kendall", "spearman", "pearson"),
   nlag = 20,
   digit = 3
 )

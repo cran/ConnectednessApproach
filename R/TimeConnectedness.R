@@ -17,7 +17,8 @@
 #' dca$TABLE
 #' }
 #' @references
-#' Diebold, F. X., & Yilmaz, K. (2009). Measuring financial asset return and volatility spillovers, with application to global equity markets. The Economic Journal, 119(534), 158-171.\\
+#' Diebold, F. X., & Yilmaz, K. (2009). Measuring financial asset return and volatility spillovers, with application to global equity markets. The Economic Journal, 119(534), 158-171.
+#' 
 #' Diebold, F. X., & Yilmaz, K. (2012). Better to give than to receive: Predictive directional measurement of volatility spillovers. International Journal of Forecasting, 28(1), 57-66.
 #' @author David Gabauer
 #' @export
@@ -48,7 +49,7 @@ TimeConnectedness = function(Phi=NULL, Sigma=NULL, nfore=10, generalized=TRUE, c
     if (is.null(NAMES)) {
       NAMES = 1:k
     }
-    date = dimnames(Sigma)[[3]]
+    date = as.character(as.Date(dimnames(Sigma)[[3]]))
     CT = array(NA, c(k, k, t), dimnames=list(NAMES, NAMES, as.character(date)))
     for (i in 1:t) {
       CT[,,i] = FEVD(Phi=Phi[,,i], Sigma=Sigma[,,i], nfore=nfore, generalized=generalized, type="time")$FEVD
@@ -58,12 +59,11 @@ TimeConnectedness = function(Phi=NULL, Sigma=NULL, nfore=10, generalized=TRUE, c
     t = dim(CT)[3]
     NAMES = dimnames(CT)[[1]]
     k = length(NAMES)
-    date = as.Date(dimnames(CT)[[3]])
-    CT = CT
+    date = as.character(as.Date(dimnames(CT)[[3]]))
   }
-  TCI = array(NA, c(t,1), dimnames=list(as.character(date), "TCI"))
-  NPT = NET = FROM = TO = array(NA, c(t, k), dimnames=list(as.character(date), NAMES))
-  PCI = NPDC = INFLUENCE = array(NA, c(k, k, t), dimnames=list(NAMES, NAMES, as.character(date)))
+  TCI = array(NA, c(t,1), dimnames=list(date, "TCI"))
+  NPT = NET = FROM = TO = array(NA, c(t, k), dimnames=list(date, NAMES))
+  PCI = NPDC = INFLUENCE = array(NA, c(k, k, t), dimnames=list(NAMES, NAMES, date))
   pb = progress::progress_bar$new(total=t)
   for (i in 1:t) {
     ct = ConnectednessTable(CT[,,i])
@@ -82,6 +82,7 @@ TimeConnectedness = function(Phi=NULL, Sigma=NULL, nfore=10, generalized=TRUE, c
     pb$tick()
   }
   TABLE = ConnectednessTable(CT)$TABLE
+  config = list(nfore=nfore, approach="Time", generalized=generalized, corrected=corrected)
   return = list(TABLE=TABLE, CT=CT, TCI=TCI, TO=TO, FROM=FROM,
-                NET=NET, NPT=NPT, NPDC=NPDC, PCI=PCI, INFLUENCE=INFLUENCE, approach="Time")
+                NET=NET, NPT=NPT, NPDC=NPDC, PCI=PCI, INFLUENCE=INFLUENCE, config=config)
 }

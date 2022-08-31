@@ -4,13 +4,7 @@
 \alias{ExclusiveConnectedness}
 \title{Exclusive Connectedness Measures}
 \usage{
-ExclusiveConnectedness(
-  dca,
-  group = c(1, 2),
-  start = NULL,
-  end = NULL,
-  corrected = FALSE
-)
+ExclusiveConnectedness(dca, group = c(1, 2), start = NULL, end = NULL)
 }
 \arguments{
 \item{dca}{Dynamic connectedness object}
@@ -20,8 +14,6 @@ ExclusiveConnectedness(
 \item{start}{Start index}
 
 \item{end}{End index}
-
-\item{corrected}{Boolean value whether corrected or standard TCI should be computed}
 }
 \value{
 Get connectedness measures
@@ -41,11 +33,8 @@ dca = ConnectednessApproach(cegg2022,
                             corrected=TRUE,
                             VAR_config=list(TVPVAR=list(kappa1=0.99, 
                             kappa2=0.99, prior="BayesPrior")))
-exc = ExclusiveConnectedness(dca, group=c(1,2,3), corrected=TRUE)
+exc = ExclusiveConnectedness(dca, group=c(1,2,3))
 }
-}
-\references{
-Chatziantoniou, I., Elsayed, A., Gabauer, D., & Gozgor, G. (2022). Oil price shocks and exchange rate dynamics: New evidence from decomposed and partial connectedness measures for oil importing and exporting economies.
 }
 \author{
 David Gabauer

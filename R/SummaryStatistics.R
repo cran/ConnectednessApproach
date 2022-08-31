@@ -14,8 +14,17 @@
 #' @importFrom stats t.test
 #' @importFrom stats cor.test
 #' @export
-SummaryStatistics = function(x, portmanteau="Ljung-Box", correlation="kendall", nlag=20, digit=3) {
-  if (class(x)!="zoo") {
+SummaryStatistics = function(x, portmanteau=c("Ljung-Box", "Box-Pierce", "Monti"), correlation=c("kendall", "spearman", "pearson"), nlag=20, digit=3) {
+  message("The following statistics are used:\n
+          Skewness: D'Agostino, R.B. (1970). Transformation to Normality of the Null Distribution of G1. Biometrika, 57, 3, 679-681.\n
+          Excess Kurtosis: Anscombe, F.J., Glynn, W.J. (1983) Distribution of kurtosis statistic for normal statistics. Biometrika, 70, 1, 227-234\n
+          Normality test: Jarque, C. M., & Bera, A. K. (1980). Efficient tests for normality, homoscedasticity and serial independence of regression residuals. Economics Letters, 6(3), 255-259.\n
+          ERS unit-root test: Elliott, G., Rothenberg, T. J., & Stock, J. H. (1996). Efficient Tests for an Autoregressive Unit Root. Econometrica, 64(4), 813-836.\n
+          Weighted Portmanteau statistics: Fisher, T. J., & Gallagher, C. M. (2012). New weighted portmanteau statistics for time series goodness of fit testing. Journal of the American Statistical Association, 107(498), 777-787.\n
+          ")
+  portmanteau = match.arg(portmanteau)
+  correlation = match.arg(correlation)
+  if (!is(x, "zoo")) {
     stop("x needs to be a zoo matrix")
   }
   x = as.matrix(x)
@@ -43,13 +52,13 @@ SummaryStatistics = function(x, portmanteau="Ljung-Box", correlation="kendall", 
     jb = moments::jarque.test(x[,i])
     moments[9,i] = jb$statistic
     moments[10,i] = jb$p.value
-    ers = urca::ur.ers(x[,i],type="DF-GLS",model="constant")
+    ers = urca::ur.ers(x[,i],type="DF-GLS", model="constant")
     moments[11,i] = ers@teststat
     moments[12,i]= ers@testreg$coefficients[1,4]
-    bt = WeightedPortTest::Weighted.Box.test(x[,i], type=portmanteau, lag=nlag)
+    bt = WeightedBoxTest(x[,i], type=portmanteau, lag=nlag)
     moments[13,i] = bt$statistic
     moments[14,i] = bt$p.value
-    bt2 = WeightedPortTest::Weighted.Box.test(x[,i], type=portmanteau, lag=nlag, sqrd.res=TRUE)
+    bt2 = WeightedBoxTest(x[,i], type=portmanteau, lag=nlag, sqrd.res=TRUE)
     moments[15,i] = bt2$statistic
     moments[16,i] = bt2$p.value
   }

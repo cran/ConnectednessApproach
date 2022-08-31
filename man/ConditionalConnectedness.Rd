@@ -4,13 +4,7 @@
 \alias{ConditionalConnectedness}
 \title{ConditionalConnectedness}
 \usage{
-ConditionalConnectedness(
-  dca,
-  group = c(1, 2, 3),
-  start = NULL,
-  end = NULL,
-  corrected = FALSE
-)
+ConditionalConnectedness(dca, group = c(1, 2, 3), start = NULL, end = NULL)
 }
 \arguments{
 \item{dca}{Dynamic connectedness object}
@@ -20,8 +14,6 @@ ConditionalConnectedness(
 \item{start}{Start index}
 
 \item{end}{End index}
-
-\item{corrected}{Boolean value whether corrected or standard TCI should be computed}
 }
 \value{
 Get connectedness measures
@@ -32,16 +24,16 @@ This function computes the conditional connectedness measures.
 \examples{
 \donttest{
 #Replication of Chatzianzoniou, Gabauer and Stenfors (2022)
-data(cgs2022)
-dca = ConnectednessApproach(cgs2022, 
-                            nlag=1, 
-                            nfore=10, 
-                            window.size=250,
-                            model="TVP-VAR",
-                            connectedness="Time",
-                            VAR_config=list(TVPVAR=list(kappa1=0.99, kappa2=0.99, 
-                            prior="BayesPrior")))
-cc = ConditionalConnectedness(dca, group=c(1,4,7,10,13,16))
+#data(cgs2022)
+#dca = ConnectednessApproach(cgs2022, 
+#                            nlag=1, 
+#                            nfore=10, 
+#                            window.size=250,
+#                            model="TVP-VAR",
+#                            connectedness="Time",
+#                            VAR_config=list(TVPVAR=list(kappa1=0.99, kappa2=0.99, 
+#                            prior="BayesPrior")))
+#cc = ConditionalConnectedness(dca, group=c(1,4,7,10,13,16))
 }
 }
 \references{

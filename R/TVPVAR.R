@@ -17,7 +17,8 @@
 #' @importFrom stats cov
 #' @importFrom progress progress_bar
 #' @references
-#' Koop, G., & Korobilis, D. (2014). A new index of financial conditions. European Economic Review, 71, 101-116.\\
+#' Koop, G., & Korobilis, D. (2014). A new index of financial conditions. European Economic Review, 71, 101-116.
+#' 
 #' Antonakakis, N., Chatziantoniou, I., & Gabauer, D. (2020). Refined measures of dynamic connectedness based on time-varying parameter vector autoregressions. Journal of Risk and Financial Management, 13(4), 84.
 #' @author David Gabauer
 #' @export
@@ -28,7 +29,7 @@ TVPVAR = function(x, configuration=list(l=c(0.99,0.99), nlag=1, prior=NULL)){
   if (nlag<=0) {
     stop("nlag needs to be a positive integer")
   }
-  if (class(x)!="zoo") {
+  if (!is(x, "zoo")) {
     stop("Data needs to be of type 'zoo'")
   }
   if (l[1] <= 0 || l[1] >= 1) {
@@ -84,8 +85,8 @@ TVPVAR = function(x, configuration=list(l=c(0.99,0.99), nlag=1, prior=NULL)){
   Sb_t = array(0,c(m,m,t))
 
   beta_t = array(0, c(k,k,t))
-  Q_t = array(0, c(r,r,t))
-
+  Q_t = array(0, c(r,r,t), dimnames=list(NAMES, NAMES, as.character(zoo::index(x))))
+  
   # Decay and forgetting factors
   l_2 = l[2]
   l_4 = l[1]
@@ -154,7 +155,6 @@ TVPVAR = function(x, configuration=list(l=c(0.99,0.99), nlag=1, prior=NULL)){
     }
     pb$tick()
   }
-  colnames(Q_t) = rownames(Q_t) = NAMES
-  dimnames(Q_t)[[3]] = zoo::index(x)
-  return = list(B_t=beta_t[1:ncol(Q_t),,], Q_t=Q_t)
+  B_t = beta_t[1:ncol(Q_t),,]
+  return = list(B_t=B_t, Q_t=Q_t)
 }

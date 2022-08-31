@@ -11,14 +11,15 @@
 #' #fit = QVAR(dy2012, configuration=list(nlag=1, tau=0.5))
 #' @importFrom quantreg rq
 #' @references
-#' White, H., Kim, T. H., & Manganelli, S. (2015). VAR for VaR: Measuring tail dependence using multivariate regression quantiles. Journal of Econometrics, 187(1), 169-188.\\
+#' White, H., Kim, T. H., & Manganelli, S. (2015). VAR for VaR: Measuring tail dependence using multivariate regression quantiles. Journal of Econometrics, 187(1), 169-188.
+#' 
 #' Chatziantoniou, I., Gabauer, D., & Stenfors, A. (2021). Interest rate swaps and the transmission mechanism of monetary policy: A quantile connectedness approach. Economics Letters, 204, 109891.
 #' @author David Gabauer
 #' @export
 QVAR = function(x, configuration=list(nlag=1, tau=0.5)) {
   tau = as.numeric(configuration$tau)
   nlag = as.numeric(configuration$nlag)
-  if (class(x)!="zoo") {
+  if (!is(x, "zoo")) {
     stop("Data needs to be of type 'zoo'")
   }
   if (nlag<=0) {
@@ -40,6 +41,6 @@ QVAR = function(x, configuration=list(nlag=1, tau=0.5)) {
     B = rbind(B, fit$coefficients[-1])
     Res = cbind(Res, fit$residuals)
   }
-  Q = array(t(Res)%*%Res/nrow(Res), c(k, k, 1), dimnames=c(list(NAMES), list(NAMES), list(zoo::index(x)[nrow(x)])))
+  Q = array(t(Res)%*%Res/nrow(Res), c(k, k, 1), dimnames=list(NAMES, NAMES, tail(zoo::index(rownames(x)),1)))
   results = list(B=B, Q=Q)
 }

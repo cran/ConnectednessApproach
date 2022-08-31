@@ -4,13 +4,7 @@
 \alias{AggregatedConnectedness}
 \title{Aggregated Connectedness Measures}
 \usage{
-AggregatedConnectedness(
-  dca,
-  groups,
-  start = NULL,
-  end = NULL,
-  corrected = FALSE
-)
+AggregatedConnectedness(dca, groups, start = NULL, end = NULL)
 }
 \arguments{
 \item{dca}{Dynamic connectedness object}
@@ -20,8 +14,6 @@ AggregatedConnectedness(
 \item{start}{Start index}
 
 \item{end}{End index}
-
-\item{corrected}{Boolean value whether corrected or standard TCI should be computed}
 }
 \value{
 Get connectedness measures
@@ -45,7 +37,7 @@ ac = AggregatedConnectedness(dca, groups=list("US"=c(1,2,3,4), "JP"=c(5,6,7,8)))
 }
 }
 \references{
-Gabauer, D., & Gupta, R. (2018). On the transmission mechanism of country-specific and international economic uncertainty spillovers: Evidence from a TVP-VAR connectedness decomposition approach. Economics Letters, 171, 63-71.
+Chatziantoniou, I., Gabauer, D., & Stenfor, A. (2021). Independent Policy, Dependent Outcomes: A Game of Cross-Country Dominoes across European Yield Curves (No. 2021-06). University of Portsmouth, Portsmouth Business School, Economics and Finance Subject Group.
 }
 \author{
 David Gabauer
