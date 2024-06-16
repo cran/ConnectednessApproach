@@ -10,6 +10,7 @@ MinimumConnectednessPortfolio(
   method = c("cumsum", "cumprod"),
   statistics = c("Fisher", "Bartlett", "Fligner-Killeen", "Levene", "Brown-Forsythe"),
   long = TRUE,
+  metric = "StdDev",
   digit = 2
 )
 }
@@ -24,6 +25,8 @@ MinimumConnectednessPortfolio(
 
 \item{long}{Allow only long portfolio position}
 
+\item{metric}{Risk measure of Sharpe Ratio (StdDev, VaR, or CVaR)}
+
 \item{digit}{Number of decimal places}
 }
 \value{
@@ -36,7 +39,7 @@ This function calculates the minimum connectedness portfolio
 data("g2020")
 fit = VAR(g2020, configuration=list(nlag=1))
 dca = TimeConnectedness(Phi=fit$B, Sigma=fit$Q, nfore=10, generalized=TRUE)
-mcp = MinimumConnectednessPortfolio(g2020, dca$PCI, statistics="Fisher")
+mcp = MinimumConnectednessPortfolio(g2020/100, dca$PCI, statistics="Fisher")
 mcp$TABLE
 }
 \references{

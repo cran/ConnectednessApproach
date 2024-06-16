@@ -4,7 +4,7 @@
 \alias{QVAR}
 \title{Quantile vector autoregression}
 \usage{
-QVAR(x, configuration = list(nlag = 1, tau = 0.5))
+QVAR(x, configuration = list(nlag = 1, tau = 0.5, method = "fn"))
 }
 \arguments{
 \item{x}{zoo data matrix}
@@ -14,6 +14,8 @@ QVAR(x, configuration = list(nlag = 1, tau = 0.5))
 \item{nlag}{Lag length}
 
 \item{tau}{quantile between 0 and 1}
+
+\item{method}{See methods for rq in quantreg package. Default is "fn".}
 }
 \value{
 Estimate QVAR model
@@ -22,8 +24,10 @@ Estimate QVAR model
 Estimation of a QVAR using equation-by-equation quantile regressions.
 }
 \examples{
-#data(dy2012)
-#fit = QVAR(dy2012, configuration=list(nlag=1, tau=0.5))
+\donttest{
+data("dy2012")
+fit = QVAR(dy2012, configuration=list(nlag=1, tau=0.5))
+}
 }
 \references{
 White, H., Kim, T. H., & Manganelli, S. (2015). VAR for VaR: Measuring tail dependence using multivariate regression quantiles. Journal of Econometrics, 187(1), 169-188.

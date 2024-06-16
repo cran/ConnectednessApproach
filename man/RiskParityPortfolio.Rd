@@ -10,6 +10,7 @@ RiskParityPortfolio(
   method = c("cumsum", "cumprod"),
   statistics = c("Fisher", "Bartlett", "Fligner-Killeen", "Levene", "Brown-Forsythe"),
   long = TRUE,
+  metric = "StdDev",
   digit = 2
 )
 }
@@ -24,6 +25,8 @@ RiskParityPortfolio(
 
 \item{long}{Allow only long portfolio position}
 
+\item{metric}{Risk measure of Sharpe Ratio (StdDev, VaR, or CVaR)}
+
 \item{digit}{Number of decimal places}
 }
 \value{
@@ -33,10 +36,12 @@ Get portfolio weights
 This function calculates the minimum connectedness portfolio
 }
 \examples{
+\donttest{
 data("g2020")
 fit = VAR(g2020, configuration=list(nlag=1))
-mcp = RiskParityPortfolio(g2020, fit$Q, statistics="Fisher")
+mcp = RiskParityPortfolio(g2020/100, fit$Q, statistics="Fisher")
 mcp$TABLE
+}
 }
 \references{
 Ederington, L. H. (1979). The hedging performance of the new futures markets. The Journal of Finance, 34(1), 157-170.

@@ -13,11 +13,8 @@
 #' dca = ConnectednessApproach(gg2018, 
 #'                             nlag=1, 
 #'                             nfore=10, 
-#'                             window.size=200,
-#'                             model="TVP-VAR",
-#'                             connectedness="Time",
-#'                             VAR_config=list(TVPVAR=list(kappa1=0.99, kappa2=0.99, 
-#'                             prior="BayesPrior")))
+#'                             model="VAR",
+#'                             connectedness="Time")
 #' ac = AggregatedConnectedness(dca, groups=list("US"=c(1,2,3,4), "JP"=c(5,6,7,8)))
 #' }
 #' @references Chatziantoniou, I., Gabauer, D., & Stenfor, A. (2021). Independent Policy, Dependent Outcomes: A Game of Cross-Country Dominoes across European Yield Curves (No. 2021-06). University of Portsmouth, Portsmouth Business School, Economics and Finance Subject Group.
@@ -25,7 +22,7 @@
 #' @export
 AggregatedConnectedness = function (dca, groups, start = NULL, end = NULL)  {
   corrected = dca$config$corrected
-  message("Aggregated connectedness measures are introduced accoring to:\n Chatziantoniou, I., Gabauer, D., & Stenfor, A. (2021). Independent Policy, Dependent Outcomes: A Game of Cross-Country Dominoes across European Yield Curves (No. 2021-06). University of Portsmouth, Portsmouth Business School, Economics and Finance Subject Group.")
+  message("Aggregated connectedness measures are introduced accoring to:\n Stenfors, A., Chatziantoniou, I., & Gabauer, D. (2022). Independent Policy, Dependent Outcomes: A Game of Cross-Country Dominoes across European Yield Curves. Journal of International Financial Markets, Institutions and Money.")
   if (is.null(start)) {
     start = 1
   }
@@ -125,7 +122,7 @@ AggregatedConnectedness = function (dca, groups, start = NULL, end = NULL)  {
       ct0 = ct = CT[, , il]
       for (i in 1:m) {
         for (j in 1:m) {
-          x = ct0[groups[i][[1]], groups[j][[1]]]
+          x = ct0[groups[i][[1]], groups[j][[1]],drop=F]
           CT_[i, j, il] = sum(rowSums(x)/nrow(x))
         }
       }

@@ -33,7 +33,7 @@ GARCHtests = function(fit, lag=20, prob=0.05, conf.level=0.90){
                              variance.model=list(model=model, submodel=submodel, garchOrder=c(1,1)),
                              distribution.model=distribution)
   }
-  x = xts::as.xts(zoo::as.zoo(fit@model$modeldata$data, order.by=fit@model$modeldata$index))
+  x = xts::xts(as.numeric(fit@model$modeldata$data), as.Date(fit@model$modeldata$index))
   t = length(x)
 
   VaR = rugarch::fitted(fit) + rugarch::sigma(fit)*rugarch::qdist(fit@model$modeldesc$distribution, p=prob, mu=fit@fit$matcoef[1,1], sigma=1, skew=ifelse(is.na(rugarch::coef(fit)["skew"]),0,rugarch::coef(fit)["skew"]), shape=rugarch::coef(fit)["shape"])
@@ -51,7 +51,7 @@ GARCHtests = function(fit, lag=20, prob=0.05, conf.level=0.90){
   ES = rugarch::fitted(fit) + rugarch::sigma(fit)*stats::integrate(f,0,prob)$value/prob
   ES = rugarch::ESTest(prob, x, ES, VaR, boot=TRUE, n.boot=1000, conf.level=conf.level)
   sign.bias = rugarch::signbias(fit)[1,][1:2]
-  warch = WeightedBoxTest(rugarch::residuals(fit), type="Ljung-Box", lag=lag, sqrd.res=TRUE)
+  warch = WeightedBoxTest(rugarch::residuals(fit, standardize=TRUE), type="Ljung-Box", lag=lag, sqrd.res=TRUE)
 
   statistics = c(sign.bias[[1]], warch$statistic, var_test$uc.LRstat, vardur_test$rLL, ES$actual.exceed/ES$expected.exceed)
   pvalues = c(sign.bias[2]$prob,warch$p.value, var_test$uc.LRp, round(ES$boot.p.value,3), vardur_test$LRp)

@@ -10,15 +10,16 @@ ConnectednessApproach(
   nfore = 10,
   window.size = NULL,
   corrected = FALSE,
-  model = c("VAR", "QVAR", "LASSO", "Ridge", "Elastic", "TVP-VAR", "DCC-GARCH"),
-  connectedness = c("Time", "Frequency", "Joint", "Extended Joint"),
-  VAR_config = list(QVAR = list(tau = 0.5), ElasticNet = list(nfolds = 10, alpha =
-    NULL, loss = "mae", delta_alpha = 0.1), TVPVAR = list(kappa1 = 0.99, kappa2 = 0.99,
-    prior = "BayesPrior", gamma = 0.01)),
+  model = c("VAR", "QVAR", "LAD", "LASSO", "Ridge", "Elastic", "TVP-VAR", "DCC-GARCH"),
+  connectedness = c("Time", "Frequency", "Joint", "Extended Joint", "R2"),
+  VAR_config = list(QVAR = list(tau = 0.5, method = "fn"), ElasticNet = list(nfolds = 10,
+    alpha = NULL, loss = "mae", n_alpha = 10), TVPVAR = list(kappa1 = 0.99, kappa2 =
+    0.99, prior = "BayesPrior", gamma = 0.01)),
   DCC_config = list(standardize = FALSE),
   Connectedness_config = list(TimeConnectedness = list(generalized = TRUE),
     FrequencyConnectedness = list(partition = c(pi, pi/2, 0), generalized = TRUE,
-    scenario = "ABS"))
+    scenario = "ABS"), R2Connectedness = list(method = "pearson", decomposition = TRUE,
+    relative = FALSE))
 )
 }
 \arguments{
@@ -54,7 +55,7 @@ data("acg2020")
 dca = ConnectednessApproach(acg2020, 
                             nlag=1, 
                             nfore=12,
-                            model="TVP-VAR",
+                            model="VAR",
                             connectedness="Time",
                             VAR_config=list(TVPVAR=list(kappa1=0.99, kappa2=0.96,
                                             prior="MinnesotaPrior", gamma=0.1)))

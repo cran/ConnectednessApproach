@@ -10,6 +10,7 @@ BivariatePortfolio(
   method = c("cumsum", "cumprod"),
   long = TRUE,
   statistics = c("Fisher", "Bartlett", "Fligner-Killeen", "Levene", "Brown-Forsythe"),
+  metric = "StdDev",
   digit = 2
 )
 }
@@ -24,6 +25,8 @@ BivariatePortfolio(
 
 \item{statistics}{Hedging effectiveness statistic}
 
+\item{metric}{Risk measure of Sharpe Ratio (StdDev, VaR, or CVaR)}
+
 \item{digit}{Number of decimal places}
 }
 \value{
@@ -33,10 +36,12 @@ Get bivariate portfolio weights
 This function calculates the optimal portfolio weights according to Kroner and Ng (1998)
 }
 \examples{
+\donttest{
 data("g2020")
 fit = VAR(g2020, configuration=list(nlag=1))
-bpw = BivariatePortfolio(g2020, fit$Q, method="cumsum", statistics="Fisher")
+bpw = BivariatePortfolio(g2020/100, fit$Q, method="cumsum", statistics="Fisher")
 bpw$TABLE
+}
 }
 \references{
 Kroner, K. F., & Ng, V. K. (1998). Modeling asymmetric comovements of asset returns. The Review of Financial Studies, 11(4), 817-844.

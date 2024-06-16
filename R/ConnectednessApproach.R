@@ -17,13 +17,14 @@
 #' dca = ConnectednessApproach(acg2020, 
 #'                             nlag=1, 
 #'                             nfore=12,
-#'                             model="TVP-VAR",
+#'                             model="VAR",
 #'                             connectedness="Time",
 #'                             VAR_config=list(TVPVAR=list(kappa1=0.99, kappa2=0.96,
 #'                                             prior="MinnesotaPrior", gamma=0.1)))
 #' dca$TABLE
 #' }
 #' @import progress
+#' @importFrom stats cor
 #' @importFrom rugarch ugarchspec
 #' @importFrom rugarch multispec
 #' @importFrom rmgarch dccspec
@@ -63,33 +64,41 @@ ConnectednessApproach = function(x,
                                  nfore=10, 
                                  window.size=NULL, 
                                  corrected=FALSE,
-                                 model=c("VAR", "QVAR", "LASSO", "Ridge", "Elastic", "TVP-VAR", "DCC-GARCH"),
-                                 connectedness=c("Time","Frequency", "Joint", "Extended Joint"),
+                                 model=c("VAR", "QVAR", "LAD", "LASSO", "Ridge", "Elastic", "TVP-VAR", "DCC-GARCH"),
+                                 connectedness=c("Time","Frequency", "Joint", "Extended Joint", "R2"),
                                  VAR_config=list(
-                                   QVAR=list(tau=0.5),
-                                   ElasticNet=list(nfolds=10, alpha=NULL, loss="mae", delta_alpha=0.1),
+                                   QVAR=list(tau=0.5, method="fn"),
+                                   ElasticNet=list(nfolds=10, alpha=NULL, loss="mae", n_alpha=10),
                                    TVPVAR=list(kappa1=0.99, kappa2=0.99, prior="BayesPrior", gamma=0.01)),
                                  DCC_config=list(standardize=FALSE),
                                  Connectedness_config = list(
                                    TimeConnectedness=list(generalized=TRUE),
-                                   FrequencyConnectedness=list(partition=c(pi,pi/2,0), generalized=TRUE, scenario="ABS")
+                                   FrequencyConnectedness=list(partition=c(pi,pi/2,0), generalized=TRUE, scenario="ABS"),
+                                   R2Connectedness=list(method="pearson", decomposition=TRUE, relative=FALSE)
                                  )) {
   if (!is(x, "zoo")) {
     stop("Data needs to be of type 'zoo'")
   }
-  if (nlag<=0) {
+  model = match.arg(model)
+  if (length(connectedness)>1) {
+    connectedness = "Time"
+  } else {
+    connectedness = match.arg(connectedness)
+  }
+
+  if (nlag<=0 & connectedness!="R2") {
     stop("nlag needs to be a positive integer")
   }
-  if (nfore<=0) {
-    stop("nfore needs to be a positive integer")
-  }
-  model = match.arg(model)
-  connectedness = match.arg(connectedness)
   
   NAMES = colnames(x)
   k = ncol(x)
   if (is.null(NAMES)) {
     NAMES = 1:k
+  }
+  if (connectedness=="R2") {
+    if (!Connectedness_config$R2Connectedness$decomposition) {
+      nlag = 0
+    }
   }
   t = nrow(x)
   if (is.null(window.size)) {
@@ -105,7 +114,13 @@ ConnectednessApproach = function(x,
     configuration = list(nlag=nlag)
   } else if (model=="QVAR") {
     var_model = QVAR
-    configuration = list(nlag=nlag, tau=VAR_config$QVAR$tau)
+    if (is.null(VAR_config$QVAR$method)) {
+      VAR_config$QVAR$method = "fn"
+    }
+    configuration = list(nlag=nlag, tau=VAR_config$QVAR$tau, method=VAR_config$QVAR$method)
+  } else if (model=="LAD") {
+    var_model = LADVAR
+    configuration = list(nlag=nlag)
   } else if (model=="LASSO") {
     var_model = ElasticNetVAR
     configuration = list(nlag=nlag, alpha=1, nfolds=VAR_config$ElasticNet$nfolds, loss=VAR_config$ElasticNet$loss)
@@ -115,7 +130,7 @@ ConnectednessApproach = function(x,
   } else if (model=="Elastic") {
     var_model = ElasticNetVAR
     configuration = list(nlag=nlag, alpha=VAR_config$ElasticNet$alpha, nfolds=VAR_config$ElasticNet$nfolds,
-                         loss=VAR_config$ElasticNet$loss, delta_alpha=VAR_config$ElasticNet$delta_alpha)
+                         loss=VAR_config$ElasticNet$loss, n_alpha=VAR_config$ElasticNet$n_alpha)
   } else if (model=="TVP-VAR") {
     prior_ = VAR_config$TVPVAR$prior
     if (prior_=="MinnesotaPrior") {
@@ -151,12 +166,14 @@ ConnectednessApproach = function(x,
   } else {
     Q_t = array(NA, c(k, k, t0))
     B_t = array(NA, c(k, k*nlag, t0))
-    pb = progress_bar$new(total=t0)
-    for (i in 1:t0) {
-      fit = var_model(x[i:(i+window.size-1),], configuration=configuration)
-      B_t[,,i] = fit$B
-      Q_t[,,i] = fit$Q
-      pb$tick()
+    if (connectedness!="R2") {
+      pb = progress_bar$new(total=t0)
+      for (i in 1:t0) {
+        fit = var_model(x[i:(i+window.size-1),], configuration=configuration)
+        B_t[,,i] = fit$B
+        Q_t[,,i] = fit$Q
+        pb$tick()
+      }
     }
   }
   DATE = as.character(zoo::index(x))
@@ -211,9 +228,30 @@ ConnectednessApproach = function(x,
     } else if (model=="QVAR") {
       message("The QVAR extended joint connectedness approach is implemented according to:\n Cunado, J, Chatziantoniou, I., Gabauer, D., Hardik, M., & de Garcia, F.P. (2022). Dynamic spillovers across precious metals and energy realized volatilities: Evidence from quantile extended joint connectedness measures.")
     }
+  } else if (connectedness=="R2") {
+    if (Connectedness_config$R2Connectedness$decomposition) {
+      if (nlag>0) {
+        message("The contemporaneous R2 connectedness approach is implemented according to:\n Naeem, M. A., Chatziantoniou, I., Gabauer, D., & Karim, S. (2023). Measuring the G20 Stock Market Return Transmission Mechanism: Evidence From the R2 Connectedness Approach. International Review of Financial Analysis.\n")
+        message("The generalized R2 connectedness approach is implemented according to:\n Balli, F., Balli, H. O., Dang, T. H. N., & Gabauer, D. (2023). Contemporaneous and lagged R2 decomposed connectedness approach: New evidence from the energy futures market. Finance Research Letters, 57, 104168.")
+      } else {
+        message("The contemporaneous R2 connectedness approach is implemented according to:\n Naeem, M. A., Chatziantoniou, I., Gabauer, D., & Karim, S. (2023). Measuring the G20 Stock Market Return Transmission Mechanism: Evidence From the R2 Connectedness Approach. International Review of Financial Analysis.")
+      }
+      dca = R2Connectedness(x, nlag=nlag, window.size=window.size, method=Connectedness_config$R2Connectedness$method,
+                            relative=Connectedness_config$R2Connectedness$relative, corrected=corrected)
+    } else {
+      fevd = Q_t
+      for (i in 1:t0) {
+        ct = cor(x[i:(i+window.size-1),], method=Connectedness_config$R2Connectedness$method)^2
+        if (Connectedness_config$R2Connectedness$method=="kendall") {
+          ct = sin(0.5*pi*ct)
+        }
+        fevd[,,i] = ct/rowSums(ct)
+      }
+      dca = TimeConnectedness(FEVD=fevd, corrected=corrected)
+      message("The unconditional connectedness approach is implemented according to:\n Gabauer, D, Chatziantoniou, I., & Stenfors, A. (2023). Model-free connectedness measures.")
+    }
   } else {
     stop("Connectedness approach does not exist")
   }
   dca
 }
-
